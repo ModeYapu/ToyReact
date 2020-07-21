@@ -4,6 +4,11 @@ class ElementWrapper {
     this.root = document.createElement(type);
   }
   setAttribute(name, value) {
+    if (name.match(/^on([\s\S]+)$/)) {
+      console.log(name);
+      let evenName = RegExp.$1.replace(/[\s\S]/, (s) => s.toLowerCase());
+      this.root.addEventListener(evenName, value);
+    }
     this.root.setAttribute(name, value);
   }
   appendChild(vchild) {
@@ -26,18 +31,43 @@ class TextWrapper {
 export class Component {
   constructor() {
     this.children = [];
+    this.props = Object.create(null);
   }
   setAttribute(name, value) {
+    this.props[name] = value;
     this[name] = value;
   }
 
   mountTo(parent) {
     let vdom = this.render();
     vdom.mountTo(parent);
+
+    Range.setStartAfter(parent.lastChild);
+    Range.set;
   }
 
   appendChild(vchild) {
     this.children.push(vchild);
+  }
+
+  setState(state) {
+    let merge = (oldState, newState) => {
+      for (let p in newState) {
+        if (typeof newState[p] === "object") {
+          if (typeof oldState[p] !== "object") {
+            oldState[p] = {};
+          }
+          merge(oldState[p], newState[p]);
+        } else {
+          oldState[p] = newState[p];
+        }
+      }
+    };
+    if (!this.state && state) {
+      this.state = {};
+    }
+    merge(this.state, state);
+    this.update();
   }
 }
 const ToyReact = {
